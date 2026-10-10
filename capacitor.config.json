@@ -1,0 +1,25 @@
+{
+  "appId": "com.djtattva.kingscounsel",
+  "appName": "King's Counsel Chess",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0f1b2d",
+    "scrollEnabled": true,
+    "preferredContentMode": "mobile"
+  },
+  "android": {
+    "backgroundColor": "#0f1b2d"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "launchShowDuration": 4000,
+      "backgroundColor": "#0f1b2d",
+      "showSpinner": false
+    },
+    "CapacitorHttp": {
+      "enabled": false
+    }
+  }
+}

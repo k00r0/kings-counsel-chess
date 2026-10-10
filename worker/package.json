@@ -1,0 +1,7 @@
+{
+  "name": "kings-counsel-ai",
+  "private": true,
+  "type": "module",
+  "scripts": { "deploy": "wrangler deploy", "dev": "wrangler dev" },
+  "devDependencies": { "wrangler": "^4" }
+}

@@ -1,0 +1,76 @@
+# Cloud builds (no Mac needed). Same playbook as your other apps.
+#  - ios-testflight: builds the iPhone/iPad app and uploads it to TestFlight
+#  - android-play:   builds a signed Android App Bundle (.aab) for Google Play
+workflows:
+  ios-testflight:
+    name: iOS → TestFlight
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Focus Sprint
+    environment:
+      groups:
+        - signing
+      vars:
+        BUNDLE_ID: com.djtattva.kingscounsel
+      node: 22
+      xcode: 26.2
+    triggering:
+      events: []
+    scripts:
+      - name: Install packages
+        script: npm ci
+      - name: Build the app and prepare the iOS project
+        script: npm run ios   # Codemagic's own BUILD_NUMBER becomes the build number
+      - name: Set up keychain for code signing
+        script: keychain initialize
+      - name: Fetch or create signing files
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Set up signing certificate
+        script: keychain add-certificates
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Build signed IPA
+        script: |
+          xcode-project build-ipa \
+            --project "ios/App/App.xcodeproj" \
+            --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
+  android-play:
+    name: Android → App Bundle
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      android_signing:
+        - kings_counsel_keystore      # upload a keystore in Codemagic: Team settings → Code signing identities
+      vars:
+        PACKAGE_NAME: com.djtattva.kingscounsel
+      node: 22
+      java: 21
+    triggering:
+      events: []
+    scripts:
+      - name: Install packages
+        script: npm ci
+      - name: Build the app and prepare the Android project
+        script: npm run android   # Codemagic's own BUILD_NUMBER becomes the versionCode
+      - name: Build signed App Bundle
+        script: |
+          cd android
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=$CM_KEYSTORE_PATH \
+            -Pandroid.injected.signing.store.password=$CM_KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$CM_KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$CM_KEY_PASSWORD
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab

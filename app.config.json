@@ -1,0 +1,49 @@
+{
+  "_readme": "The one file you edit before publishing. See GUIDE.md. AdMob values below are Google's official TEST ids, so the app runs with demo ads until you paste your own.",
+  "appName": "King's Counsel Chess",
+  "shortName": "King's Counsel",
+  "bundleId": "com.djtattva.kingscounsel",
+  "version": "1.0.0",
+  "build": "1",
+  "admob": {
+    "ios": {
+      "appId": "ca-app-pub-3940256099942544~1458002511",
+      "bannerId": "ca-app-pub-3940256099942544/2934735716",
+      "interstitialId": "ca-app-pub-3940256099942544/4411468910",
+      "rewardedId": "ca-app-pub-3940256099942544/1712485313"
+    },
+    "android": {
+      "appId": "ca-app-pub-3940256099942544~3347511713",
+      "bannerId": "ca-app-pub-3940256099942544/6300978111",
+      "interstitialId": "ca-app-pub-3940256099942544/1033173712",
+      "rewardedId": "ca-app-pub-3940256099942544/5224354917"
+    },
+    "testMode": true,
+    "interstitialEvery": 2
+  },
+  "iap": {
+    "monthly": "com.djtattva.kingscounsel.pro.monthly",
+    "yearly": "com.djtattva.kingscounsel.pro.yearly",
+    "lifetime": "com.djtattva.kingscounsel.pro.lifetime",
+    "androidPlans": { "monthly": "monthly", "yearly": "yearly" },
+    "fallbackPrices": { "monthly": "$4.99", "yearly": "$29.99", "lifetime": "$59.99" },
+    "trialDays": 7
+  },
+  "ai": {
+    "url": "",
+    "_note": "Your Cloudflare Worker address, e.g. https://kings-counsel-ai.YOURNAME.workers.dev . Empty = the coach works fully offline (buttons instead of typed questions)."
+  },
+  "limits": {
+    "freeTakebacks": 3,
+    "freeQuestionsPerDay": 5,
+    "proQuestionsPerDay": 60,
+    "rewardTakebacks": 3,
+    "rewardQuestions": 5
+  },
+  "webUrl": "https://k00r0.github.io/kings-counsel-chess",
+  "appStoreUrl": "https://apps.apple.com/app/idYOUR-APP-ID",
+  "playStoreUrl": "https://play.google.com/store/apps/details?id=com.djtattva.kingscounsel",
+  "privacyPolicyUrl": "https://k00r0.github.io/kings-counsel-chess/privacy.html",
+  "termsUrl": "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
+  "supportEmail": "sagarika125@gmail.com"
+}
