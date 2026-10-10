@@ -119,7 +119,7 @@ export const PATHS = [
           { t: 'say', text: 'A fork is one piece attacking two at once. He can only save one. Knights are the best forkers, because their attack is hard to see coming.', fen: 'r3k3/2N5/8/8/8/8/8/4K3 b - - 0 1', arrows: [{ uci: 'c7e8', color: 'danger' }, { uci: 'c7a8', color: 'danger' }] },
           { t: 'find', fen: 'q3k3/ppp2ppp/8/3N4/8/8/PPP2PPP/4K3 w - - 0 1', sol: ['d5c7'], goal: 'best', text: 'Find the fork: check the king and hit the queen.' },
           { t: 'find', fen: '2q3k1/5ppp/8/3N4/8/8/5PPP/6K1 w - - 0 1', sol: ['d5e7', '*', 'e7c8'], goal: 'best', text: 'Check the king and hit the queen at the same time.' },
-          { t: 'mined', theme: 'fork', count: 3, text: 'Find the fork.' },
+          { t: 'mined', theme: 'fork', count: 5, text: 'Find the fork.' },
         ] },
         { id: 'kn-pin', title: 'Pins and skewers', steps: [
           { t: 'say', text: "A pin: a piece can't move because something more valuable stands behind it. A skewer is the reverse: you attack the big piece, it moves, and you take what was behind it." },
@@ -194,7 +194,7 @@ export const PATHS = [
         { id: 'ma-combo', title: 'Combinations', steps: [{ t: 'mined', theme: 'combination', count: 8, min: 1050, text: 'Find the combination.' }] },
         { id: 'ma-quiet', title: 'The quiet killer', steps: [
           { t: 'say', text: "The hardest moves to see aren't captures or checks. They're quiet moves that create a threat he can't meet." },
-          { t: 'mined', theme: 'quiet', count: 3, text: 'Find the quiet move.' },
+          { t: 'mined', theme: 'quiet', count: 5, text: 'Find the quiet move.' },
         ] },
         { id: 'ma-mate3', title: 'Mating attacks', steps: [{ t: 'mined', theme: 'mate3', count: 6, text: 'Mate in three.' }, { t: 'mined', theme: 'mate2', count: 4, min: 1150, text: 'Mate in two.' }] },
       ] },

@@ -104,6 +104,10 @@ export const VIZIER = {
 
   // ---------- praise ----------
   praise_best: [
+    "That's the move I'd have whispered, if you'd asked.",
+    "Exactly right, {name}.",
+    "Precise. Very precise.",
+    "Lovely move. Keep that up.",
     "[Strong.|Sharp.|Nice.] [You're in form today.|That's what I wanted to see.]",
     "Ah, you found it. [Good.|I'm impressed.]",
     "A move a much stronger player would make.",
@@ -120,6 +124,10 @@ export const VIZIER = {
     "Good move. You're reading the position well.",
   ],
   praise_good: [
+    "Fine choice.",
+    "Reasonable, yes.",
+    "That's sound.",
+    "Okay. Carry on.",
     "[Good.|Fine.|Right.] Keep going.",
     "No complaints.",
     "Mm. Sound enough.",
@@ -128,6 +136,12 @@ export const VIZIER = {
     "Good, nothing wrong with that.", "Steady.", "Yes, that's fine.", "Mm, that works.",
   ],
   praise_capture: [
+    "And the {took} comes off the board. Good.",
+    "That {took} was there for the taking. You took it.",
+    "Nicely done. A {took} up.",
+    "He'll miss that {took}.",
+    "Clean capture. No tricks.",
+    "Pocket it. A {took} is a {took}.",
     "[Thank you, {opp}.|Much obliged.] One {took} fewer for him.",
     "The {took} falls. [Nicely spotted.|Well seen.]",
     "You win the {took}. [Keep collecting.|Material is material.]",
@@ -167,6 +181,14 @@ export const VIZIER = {
     "Castling. Excellent. Walls up, rook in the game.",
   ],
   praise_defend: [
+    "Mm. You saw it coming. Good.",
+    "He set a trap and you stepped around it.",
+    "That's careful chess, {name}. I like careful chess.",
+    "Saved. And without fuss.",
+    "You read his mind there. Well done.",
+    "Exactly the right answer to his threat.",
+    "He'll have to think of something new now.",
+    "Good. Nothing left hanging.",
     "[Good.|Right.] You didn't let him have it.",
     "You looked at his move before yours. That's the whole secret, really.",
     "Nicely handled. His idea goes nowhere now.",
@@ -184,6 +206,10 @@ export const VIZIER = {
     "Checkmate! [Beautifully done.|That's how you finish a game.|Ha! Wonderful.]",
   ],
   praise_after_takeback: [
+    "See? Second look, better move.",
+    "That's the one. Remember the feeling.",
+    "Much stronger. Well found.",
+    "Yes. That fixes it.",
     "Better. Much better.",
     "That's the move. See the difference?",
     "Yes. That's what a second look is for.",
@@ -206,6 +232,9 @@ export const VIZIER = {
 
   // ---------- the opponent's moves ----------
   opp_develops: [
+    "{opp} brings the {piece} out to {sq}.",
+    "The {piece} steps out. Natural enough.",
+    "He's getting his pieces out, as he should.",
     "He finds a home for his {piece}.",
     "{opp} develops the {piece}. Sensible enough.",
     "The {piece} joins the game.",
@@ -230,6 +259,12 @@ export const VIZIER = {
     "He castles. His king's tucked away now.", "{opp} castles. Fair enough.",
   ],
   opp_quiet: [
+    "{opp} shuffles the {piece}. Nothing alarming.",
+    "Hmm. {opp} seems to be waiting for you to do something.",
+    "A modest move. What's the most useful thing you can do now?",
+    "{opp} is being careful. So should you.",
+    "Nothing much from {opp}. Your move matters more.",
+    "He tucks the {piece} away on {sq}.",
     "{opp} takes a moment to regroup.",
     "He tidies up. Keep an eye on him.",
     "A careful move from {opp}.",
@@ -265,6 +300,9 @@ export const VIZIER = {
 
   // ---------- warnings before the player moves ----------
   warn_threat: [
+    "Careful, {name}: your {piece} is hanging by a thread.",
+    "His {by} on the prowl. Your {piece} is the prey.",
+    "Your {piece}. Look at it. Now look at his {by}.",
     "Your {piece} on {sq} is attacked, {name}.",
     "Watch the {piece}. His {by} is looking right at it.",
     "Something to deal with first: your {piece}.",
@@ -277,6 +315,10 @@ export const VIZIER = {
     "That {by} of his isn't there for decoration. Look at your {piece}.",
   ],
   warn_threat_vague: [
+    "Ask yourself: what does his last move want?",
+    "His move had a purpose. Find it before yours.",
+    "Have a look at his side of the board first.",
+    "Hold on. What's he aiming at?",
     "Look at his last move from his side of the board.",
     "What would you play, if you were him?",
     "Careful. He's got an idea.",
@@ -432,6 +474,10 @@ export const VIZIER = {
     "No take-backs left. Play on, and let's see if you can save it.",
   ],
   takeback_done: [
+    "There. Look around before you choose again.",
+    "Fresh start on this move. Which pieces are safe?",
+    "Again, slower. What does he attack?",
+    "Back. Now, what's the safest good move?",
     "Back it goes. [Now, what does he want?|Slower this time.]",
     "All right. Look at every piece of yours. Is each one safe?",
     "Good decision. Have a proper look.",
@@ -445,6 +491,11 @@ export const VIZIER = {
     "That was your last take-back this game. Use your eyes well.",
   ],
   play_on: [
+    "Then on we go.",
+    "Right. Let's make the best of it.",
+    "Hm. Fight hard, then.",
+    "Your decision. I respect it.",
+    "On we go. Eyes open.",
     "Fine. Let's fight.",
     "Then let's make the best of it.",
     "Understood. Eyes forward.",
@@ -554,6 +605,11 @@ export const VIZIER = {
 
   // ---------- running commentary ----------
   status_winning: [
+    "You're better, {name}. Keep it tidy.",
+    "This is your game to lose now. So don't.",
+    "Ahead. Now trade pieces and stay safe.",
+    "Nicely placed. Don't get greedy.",
+    "Better position, better pieces. Keep going.",
     "You're pulling ahead. Stay disciplined.",
     "Good position, {name}. Now the hard part: finishing.",
     "You're on top. Check his threats every move from here.",
