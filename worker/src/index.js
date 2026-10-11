@@ -52,7 +52,7 @@ async function chat(env, messages, maxTokens) {
       const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ model: env.GROQ_MODEL, messages, max_tokens: maxTokens, temperature: 0.7 }),
+        body: JSON.stringify({ model: env.GROQ_MODEL, messages, temperature: 0.7, ...(/gpt-oss/.test(env.GROQ_MODEL) ? { reasoning_effort: 'low', include_reasoning: false, max_tokens: maxTokens + 400 } : { max_tokens: maxTokens }) }),
       });
       if (r.ok) {
         const d = await r.json();
@@ -73,6 +73,19 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: h });
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/') return json({ ok: true, service: "King's Counsel AI" }, 200, h);
+    if (req.method === 'GET' && url.pathname === '/health') {
+      // Says whether each part works. Never reveals the key itself.
+      const out = { groqKeySet: !!env.GROQ_API_KEY, groqWorks: false, workersAiBound: !!env.AI, workersAiWorks: false, rateLimiter: !!env.LIMITER, model: env.GROQ_MODEL || null };
+      const msg = [{ role: 'user', content: 'Reply with the single word: ready' }];
+      if (env.GROQ_API_KEY) {
+        try {
+          const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify({ model: env.GROQ_MODEL, messages: msg, max_tokens: 20 }) });
+          out.groqWorks = r.ok; if (!r.ok) out.groqStatus = r.status;
+        } catch (e) { out.groqError = 'unreachable'; }
+      }
+      if (env.AI) { try { const r = await env.AI.run(env.FALLBACK_MODEL, { messages: msg, max_tokens: 10 }); out.workersAiWorks = !!(r && r.response); } catch (e) { out.workersAiError = String(e.message || e).slice(0, 120); } }
+      return json(out, 200, h);
+    }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, h);
 
     const device = (req.headers.get('x-device') || req.headers.get('cf-connecting-ip') || 'anon').slice(0, 64);

@@ -25,12 +25,19 @@
     "monthly": "com.djtattva.kingscounsel.pro.monthly",
     "yearly": "com.djtattva.kingscounsel.pro.yearly",
     "lifetime": "com.djtattva.kingscounsel.pro.lifetime",
-    "androidPlans": { "monthly": "monthly", "yearly": "yearly" },
-    "fallbackPrices": { "monthly": "$4.99", "yearly": "$29.99", "lifetime": "$59.99" },
+    "androidPlans": {
+      "monthly": "monthly",
+      "yearly": "yearly"
+    },
+    "fallbackPrices": {
+      "monthly": "$4.99",
+      "yearly": "$29.99",
+      "lifetime": "$59.99"
+    },
     "trialDays": 7
   },
   "ai": {
-    "url": "",
+    "url": "https://kings-counsel-ai.pashunmuzik.workers.dev",
     "_note": "Your Cloudflare Worker address, e.g. https://kings-counsel-ai.YOURNAME.workers.dev . Empty = the coach works fully offline (buttons instead of typed questions)."
   },
   "limits": {
