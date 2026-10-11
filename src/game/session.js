@@ -47,7 +47,7 @@ export function createGame({ mode = 'coached', tcId = 'untimed', color = 'w', op
   });
   const ctl = new GameController({
     engine: engine(), coach, playerColor: resume ? resume.color : color, mode, tc: resume ? resume.tc : tc,
-    oppElo, kids, takebacks: resume ? resume.takebacks : takebacksFor(mode), depth: kids ? 11 : 12,
+    oppElo, kids, takebacks: resume ? (resume.takebacks >= 999 ? Infinity : resume.takebacks) : takebacksFor(mode), depth: kids ? 11 : 12,
     moves: resume ? resume.moves : null,
   });
   if (resume && resume.clocks) ctl.state.clocks = resume.clocks;

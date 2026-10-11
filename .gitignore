@@ -11,3 +11,4 @@ android/app/build/
 worker/node_modules/
 .DS_Store
 website/
+store/raw/

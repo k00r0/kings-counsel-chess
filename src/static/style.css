@@ -231,6 +231,10 @@ a { color: var(--teal); }
 @keyframes talk { to { transform: scaleY(1.6) translateY(-4%); } }
 .avatar .blink { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
 
+@media (min-width: 700px) and (max-aspect-ratio: 1/1) {
+  .board-col > * { width: min(100%, calc(100dvh - 560px)); }
+  .side-col { width: min(100%, 720px); }
+}
 @media (min-width: 820px) and (min-aspect-ratio: 1/1) {
   .game-main { flex-direction: row; align-items: flex-start; justify-content: center; gap: 22px; padding: 0 20px 16px; }
   .board-col > * { width: min(calc(100dvh - 150px), calc(100vw - 440px)); }
