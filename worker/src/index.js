@@ -16,11 +16,34 @@ const RULES = `Rules:
 - Only talk about chess and learning chess. Politely steer anything else back to the game.
 - Never ask for personal information.`;
 
+// Settings, with safe defaults if a dashboard variable is missing or mistyped.
+const DEFAULT_ORIGINS = 'capacitor://localhost,https://localhost,http://localhost,https://k00r0.github.io';
+function config(env) {
+  const raw = String(env.FALLBACK_MODEL || '');
+  const fallback = (raw.match(/@cf\/[\w.\-\/]+/) || ['@cf/meta/llama-3.3-70b-instruct-fp8-fast'])[0];
+  const groqModel = /^[\w.\-\/]+$/.test(String(env.GROQ_MODEL || '').trim()) ? String(env.GROQ_MODEL).trim() : 'openai/gpt-oss-120b';
+  let origins = String(env.ALLOWED_ORIGINS || '');
+  // also accept "ALLOWED_ORIGINS = ..." pasted into another field
+  const m = (origins || raw).match(/(capacitor:\/\/[^\s"]+)/);
+  origins = m ? m[1] : origins || DEFAULT_ORIGINS;
+  return { fallback, groqModel, origins: origins.split(',').map(x => x.trim()).filter(Boolean) };
+}
+
+// Backup burst limit when the Cloudflare rate-limit binding isn't set up (per worker instance).
+const hits = new Map();
+function localLimit(key, limit = 12, ms = 60000) {
+  const now = Date.now();
+  const list = (hits.get(key) || []).filter(t => now - t < ms);
+  list.push(now); hits.set(key, list);
+  if (hits.size > 5000) hits.clear();
+  return list.length <= limit;
+}
+
 const json = (data, status = 200, headers = {}) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', ...headers } });
 
 function cors(req, env) {
   const origin = req.headers.get('origin') || '';
-  const allowed = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim());
+  const allowed = config(env).origins;
   return {
     'access-control-allow-origin': allowed.includes(origin) ? origin : allowed[0] || '*',
     'access-control-allow-methods': 'POST, OPTIONS',
@@ -52,7 +75,7 @@ async function chat(env, messages, maxTokens) {
       const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ model: env.GROQ_MODEL, messages, temperature: 0.7, ...(/gpt-oss/.test(env.GROQ_MODEL) ? { reasoning_effort: 'low', include_reasoning: false, max_tokens: maxTokens + 400 } : { max_tokens: maxTokens }) }),
+        body: JSON.stringify({ model: config(env).groqModel, messages, temperature: 0.7, ...(/gpt-oss/.test(config(env).groqModel) ? { reasoning_effort: 'low', include_reasoning: false, max_tokens: maxTokens + 400 } : { max_tokens: maxTokens }) }),
       });
       if (r.ok) {
         const d = await r.json();
@@ -61,7 +84,7 @@ async function chat(env, messages, maxTokens) {
       }
     } catch (e) { /* fall through */ }
   }
-  const out = await env.AI.run(env.FALLBACK_MODEL, { messages, max_tokens: maxTokens });
+  const out = await env.AI.run(config(env).fallback, { messages, max_tokens: maxTokens });
   return String(out.response || '').trim();
 }
 
@@ -75,15 +98,19 @@ export default {
     if (req.method === 'GET' && url.pathname === '/') return json({ ok: true, service: "King's Counsel AI" }, 200, h);
     if (req.method === 'GET' && url.pathname === '/health') {
       // Says whether each part works. Never reveals the key itself.
-      const out = { groqKeySet: !!env.GROQ_API_KEY, groqWorks: false, workersAiBound: !!env.AI, workersAiWorks: false, rateLimiter: !!env.LIMITER, model: env.GROQ_MODEL || null };
+      const c = config(env);
+      const out = { version: 2, groqKeySet: !!env.GROQ_API_KEY, groqWorks: false, workersAiBound: !!env.AI, workersAiWorks: false, voiceWorks: false, rateLimiter: env.LIMITER ? 'cloudflare' : 'built-in', model: c.groqModel, fallbackModel: c.fallback, allowedOrigins: c.origins.join(',') };
       const msg = [{ role: 'user', content: 'Reply with the single word: ready' }];
       if (env.GROQ_API_KEY) {
         try {
-          const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify({ model: env.GROQ_MODEL, messages: msg, max_tokens: 20 }) });
+          const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify({ model: c.groqModel, messages: msg, max_tokens: 200, ...(/gpt-oss/.test(c.groqModel) ? { reasoning_effort: 'low' } : {}) }) });
           out.groqWorks = r.ok; if (!r.ok) out.groqStatus = r.status;
         } catch (e) { out.groqError = 'unreachable'; }
       }
-      if (env.AI) { try { const r = await env.AI.run(env.FALLBACK_MODEL, { messages: msg, max_tokens: 10 }); out.workersAiWorks = !!(r && r.response); } catch (e) { out.workersAiError = String(e.message || e).slice(0, 120); } }
+      if (env.AI) {
+        try { const r = await env.AI.run(c.fallback, { messages: msg, max_tokens: 10 }); out.workersAiWorks = !!(r && r.response); } catch (e) { out.workersAiError = String(e.message || e).slice(0, 120); }
+        try { const v = await env.AI.run('@cf/deepgram/aura-1', { text: 'Ready.', speaker: 'helios', encoding: 'mp3' }, { returnRawResponse: true }); out.voiceWorks = !!v && (!(v instanceof Response) || v.ok); } catch (e) { out.voiceError = String(e.message || e).slice(0, 120); }
+      }
       return json(out, 200, h);
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, h);
@@ -92,7 +119,7 @@ export default {
     if (env.LIMITER) {
       const { success } = await env.LIMITER.limit({ key: device + url.pathname });
       if (!success) return json({ error: 'slow down' }, 429, h);
-    }
+    } else if (!localLimit(device + url.pathname)) return json({ error: 'slow down' }, 429, h);
     let body;
     try { body = await req.json(); } catch (e) { return json({ error: 'bad json' }, 400, h); }
     const persona = body.persona === 'hopper' ? 'hopper' : 'vizier';
