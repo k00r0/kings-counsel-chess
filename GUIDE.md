@@ -41,7 +41,7 @@ npm run preview      # opens on http://localhost:5173
 Not used on purpose: Gemini's free tier (it trains on your users' data and isn't allowed in the EU).
 
 ### 3a. GitHub
-Create an **empty public** repository named `kings-counsel-chess` (no README). Public is required: the engine is GPL, so the app's source must be available, and GitHub Pages is free only for public repos. Tell Claude when it exists; Claude pushes the code and the website (`gh-pages` branch). Then in the repo: Settings → Pages → Branch `gh-pages` → Save. The site appears at `https://k00r0.github.io/kings-counsel-chess`.
+Source code: private repo `kings-counsel-chess`. Website: public repo `kings-counsel-chess-site` (built site only, no source) with Pages on the `main` branch. The site appears at `https://k00r0.github.io/kings-counsel-chess-site`.
 
 ### 3b. Turn on the AI coach (Cloudflare + Groq)
 **Never paste keys into a chat.** You type them straight into Cloudflare.
@@ -89,4 +89,4 @@ Every move is checked by Stockfish. When your move drops your winning chances a 
 
 ## 6. Licences
 
-Stockfish (GPLv3) and the cburnett piece set (GPL) mean the app is GPLv3 too: keep the GitHub repo public. That's allowed in the App Store and Google Play. Kids' pieces, coaches, art and all dialogue are original.
+Stockfish (GPLv3) and the cburnett piece set (GPL) are GPL. Shipping the app with them normally means making the app's source available too. **Current decision: the source repo stays private for now**, knowing this isn't compliant. To fix it later: make `kings-counsel-chess` public (or publish the source somewhere public), or replace the engine and pieces with non-GPL ones. Kids' pieces, coaches, art and all dialogue are original.

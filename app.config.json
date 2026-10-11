@@ -47,10 +47,10 @@
     "rewardTakebacks": 3,
     "rewardQuestions": 5
   },
-  "webUrl": "https://k00r0.github.io/kings-counsel-chess",
+  "webUrl": "https://k00r0.github.io/kings-counsel-chess-site",
   "appStoreUrl": "https://apps.apple.com/app/idYOUR-APP-ID",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.djtattva.kingscounsel",
-  "privacyPolicyUrl": "https://k00r0.github.io/kings-counsel-chess/privacy.html",
+  "privacyPolicyUrl": "https://k00r0.github.io/kings-counsel-chess-site/privacy.html",
   "termsUrl": "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
   "supportEmail": "sagarika125@gmail.com"
 }
