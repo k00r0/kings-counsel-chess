@@ -7,6 +7,7 @@ import { pieceMap, phase, material, other, uciToMove, sanOf, VALUE } from '../ch
 import { isMateScore } from '../chess/engine.js';
 import { developmentFacts } from '../coach/coach.js';
 
+const RANK = { best: 0, good: 1, inaccuracy: 2, mistake: 3, blunder: 4 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const winPct = cp => 50 + 50 * winChance(cp);
 const moveAccuracy = (before, after) => Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * Math.max(0, before - after)) - 3.1669));
@@ -122,14 +123,33 @@ export class GameController {
     if (gen !== this.gen) return true;
 
     const me = this.playerColor;
-    const bestLine = pre.lines[0];
-    const afterCp = this.chess.isCheckmate() ? (me === 'w' ? 99900 : -99900) : post.lines[0] ? post.lines[0].cp : bestLine ? bestLine.cp : 0;
-    const bestCp = bestLine ? bestLine.cp : afterCp;
-    const verdict = bestLine && bestLine.move === uci ? { loss: 0, cpLoss: 0, kind: 'best' } : judge(bestCp, afterCp, me);
+    let bestLine = pre.lines[0];
+    let afterCp = this.chess.isCheckmate() ? (me === 'w' ? 99900 : -99900) : post.lines[0] ? post.lines[0].cp : bestLine ? bestLine.cp : 0;
+    let bestCp = bestLine ? bestLine.cp : afterCp;
+    let verdict = bestLine && bestLine.move === uci ? { loss: 0, cpLoss: 0, kind: 'best' } : judge(bestCp, afterCp, me);
+    let mateMissed = bestLine && isMateScore(bestLine.cp) && pov(bestLine.cp, me) > 0 && !(isMateScore(afterCp) && pov(afterCp, me) > 0);
+
+    // Second opinion: before the coach calls a move a mistake or recommends another move, a much deeper
+    // analysis must agree. The milder of the two verdicts wins, and the recommended move is the deep one.
+    const wouldComment = verdict.kind === 'mistake' || verdict.kind === 'blunder' || mateMissed || (verdict.kind === 'inaccuracy' && this.coached && this.help <= 2);
+    let afterLine = post.lines[0];
+    if (wouldComment && !over && this.verify !== false) {
+      const deep = await this.secondOpinion(fenBefore, this.chess.fen(), uci);
+      if (gen !== this.gen) return true;
+      if (deep) {
+        const v2 = deep.playedIsBest ? { loss: 0, cpLoss: 0, kind: 'best' } : judge(deep.bestCp, deep.afterCp, me);
+        verdict = RANK[v2.kind] < RANK[verdict.kind] ? v2 : { ...verdict, loss: Math.min(verdict.loss, v2.loss), cpLoss: Math.min(verdict.cpLoss, v2.cpLoss) };
+        bestLine = deep.bestLine; bestCp = deep.bestCp; afterCp = deep.afterCp; afterLine = deep.afterLine;
+        mateMissed = mateMissed && isMateScore(bestCp) && pov(bestCp, me) > 0 && !(isMateScore(afterCp) && pov(afterCp, me) > 0);
+        // small "X was a bit better" tips only when the gain is real and the game isn't already decided
+        if (verdict.kind === 'inaccuracy' && (verdict.cpLoss < 80 || Math.abs(pov(bestCp, me)) > 500)) verdict = { ...verdict, kind: 'good' };
+        // the opponent sees the deep answer too, so a real blunder gets punished
+        if (afterLine) post.lines = [afterLine, ...post.lines.filter(l => l.move !== afterLine.move)];
+      }
+    }
     const facts = describeMove(fenBefore, uci);
     const bad = verdict.kind === 'mistake' || verdict.kind === 'blunder';
-    const mateMissed = bestLine && isMateScore(bestLine.cp) && pov(bestLine.cp, me) > 0 && !(isMateScore(afterCp) && pov(afterCp, me) > 0);
-    const why = (bad || mateMissed) && bestLine ? explainMistake({ fenBefore, played: uci, bestLine, afterLine: post.lines[0], priorThreat: pre.threat }) : null;
+    const why = (bad || mateMissed) && bestLine ? explainMistake({ fenBefore, played: uci, bestLine, afterLine, priorThreat: pre.threat }) : null;
     const bestSan = bestLine ? sanOf(fenBefore, bestLine.move) : null;
     const reply = post.lines[0];
     const recapture = !!(reply && reply.move.slice(2, 4) === mv.to);
@@ -161,6 +181,19 @@ export class GameController {
     if (out) this.say(out);
     this.opponentTurn(post);
     return true;
+  }
+
+  /** A deeper, independent look at the position before and after the player's move. */
+  async secondOpinion(fenBefore, fenAfter, uci) {
+    const depth = this.kids ? 16 : 18, movetime = 2500;
+    const before = await this.engine.analyze(fenBefore, { depth, movetime, multipv: 2 });
+    const b = before.lines[0];
+    if (!b) return null;
+    if (b.move === uci) return { playedIsBest: true, bestLine: b, bestCp: b.cp, afterCp: b.cp, afterLine: null };
+    const after = await this.engine.analyze(fenAfter, { depth: depth - 1, movetime });
+    const a = after.lines[0];
+    if (!a) return null;
+    return { playedIsBest: false, bestLine: b, bestCp: b.cp, afterCp: a.cp, afterLine: a };
   }
 
   /** The player's answer to an intervention. */
@@ -200,9 +233,10 @@ export class GameController {
   ease() {
     if (!this.coached) return 0;
     const cp = this.state.eval;
-    if (cp < -150) this.easeAcc = Math.min(1, this.easeAcc + 0.12);
-    else if (cp > 150) this.easeAcc = Math.max(0, this.easeAcc - 0.25);
-    return Math.min(1, (this.kids ? 0.3 : 0) + this.easeAcc);
+    // only a gentle nudge, and only while the player is clearly behind
+    if (cp < -250) this.easeAcc = Math.min(0.4, this.easeAcc + 0.05);
+    else if (cp > 0) this.easeAcc = Math.max(0, this.easeAcc - 0.2);
+    return Math.min(0.6, (this.kids ? 0.3 : 0) + this.easeAcc);
   }
 
   async opponentTurn(post) {
@@ -256,7 +290,10 @@ export class GameController {
     const pre = await this.pre;
     if (kind === 'threat') return this.say(this.coach.threatAnswer(pre.threat));
     if (kind === 'hint') {
-      const b = pre.lines[0];
+      // hints get the deep look too, so the coach never points at a weak move
+      const deep = await this.engine.analyze(pre.fen, { depth: this.kids ? 16 : 18, movetime: 2500 });
+      if (this.chess.fen() !== pre.fen) return;
+      const b = deep.lines[0] || pre.lines[0];
       const f = b ? describeMove(pre.fen, b.move) : null;
       return this.say(this.coach.hint(pre.fen, f ? { piece: f.piece, from: f.from, san: f.san, uci: b.move } : null));
     }

@@ -54,7 +54,8 @@ export class UciEngine {
       const cmds = [];
       if (multipv !== this.multipv) { cmds.push(`setoption name MultiPV value ${multipv}`); this.multipv = multipv; }
       cmds.push(`position fen ${fen}`);
-      cmds.push(movetime ? `go movetime ${movetime}` : nodes ? `go nodes ${nodes}` : `go depth ${depth}`);
+      // depth and movetime together = stop at whichever comes first (keeps deep checks fast on slow phones)
+      cmds.push(nodes ? `go nodes ${nodes}` : movetime && depth ? `go depth ${depth} movetime ${movetime}` : movetime ? `go movetime ${movetime}` : `go depth ${depth}`);
       const last = await this._cmdUntil(cmds, l => l.startsWith('bestmove'), line => {
         if (!line.startsWith('info') || !line.includes(' pv ')) return;
         const m = line.match(/ depth (\d+).*? multipv (\d+) score (cp|mate) (-?\d+).*? pv (.+)$/);

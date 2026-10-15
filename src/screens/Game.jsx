@@ -8,6 +8,7 @@ import { createGame, recordGame, saveCurrent, kidsMode } from '../game/session.j
 import { speak, stop as stopVoice } from '../services/voice.js';
 import { playMoveSound, sound } from '../services/sound.js';
 import { askCoach, aiAvailable } from '../services/ai.js';
+import { checkAnswer } from '../coach/factcheck.js';
 import { go, back, openSheet } from '../ui/nav.js';
 import { pvToSan } from '../chess/core.js';
 import { Chess } from 'chess.js';
@@ -109,7 +110,10 @@ export function Game({ setup }) {
       };
       const answer = await askCoach(q, facts, persona);
       useQuestion();
-      ctl.say({ text: answer, mood: 'calm' });
+      // the engine has the final word: if the AI names a move the engine doesn't back, use the engine's answer
+      const check = checkAnswer(answer, facts);
+      if (check.ok) ctl.say({ text: answer, mood: 'calm' });
+      else await ctl.ask(/threat|attack|danger|want/i.test(q) ? 'threat' : /plan|idea|strategy/i.test(q) ? 'plan' : 'hint');
     } catch (err) {
       ctl.say({ text: persona === 'hopper' ? "Hmm, I can't think right now! Try the buttons!" : "I can't reach my library just now. Try one of the quick questions instead.", mood: 'thinking' });
     }
